@@ -7,15 +7,23 @@
 # Last updated: 1/26/2024.
 
 
-# Create a lidar-derived Canopy Height Model (CHM) ------------------------
+# Setup -------------------------------------------------------------------
 
 # Load needed packages.
 library(raster)
 library(rgdal)
+library(dplyr)
+library(maptools)
+library(ggplot2)
+
+options(stringsAsFactors = FALSE)
 
 # Set working directory.
 wd <- "C:/Research_Projects/LiDAR"
 setwd(wd)
+
+
+# Create a lidar-derived Canopy Height Model (CHM) ------------------------
 
 # Assign raster to object.
 dsm <- raster(
@@ -83,4 +91,43 @@ writeRaster(chm,
 
 # Extract Values from a Raster in R ---------------------------------------
 
+# Import the centroid data and the vegetation structure data.
+centroids <- read.csv(
+  file.path(
+    wd, "NEON Tutorials", "Data",
+    "NEON-DS-Field-Site-Spatial-Data/SJER/PlotCentroids/SJERPlotCentroids.csv"))
+str(centroids)
+
+vegStr <- read.csv(
+  file.path(
+    wd, "NEON Tutorials", "Data",
+    "NEON-DS-Field-Site-Spatial-Data/SJER/VegetationData/D17_2013_vegStr.csv"))
+str(vegStr)
+
+# Import the canopy height model.
+chm <- raster(file.path(
+  wd, "NEON Tutorials", "Results",
+  "chm_SJER.tif"))
+
+# Plot raster.
+plot(chm, 
+     main = "Lidar Canopy Height Model\nSJER, California")
+
+# Overlay the centroid points and the stem locations on the CHM plot
+#   plot the chm.
+myCol <- terrain.colors(6)
+plot(chm, col = myCol, 
+     main = "Plot & Tree Locations", 
+     breaks = c(-2, 0, 2, 10, 40))
+
+# Plotting details: cex = point size, pch 0 = square
+# Plot square around the centroid.
+points(centroids$easting,
+       centroids$northing, 
+       pch = 0, cex = 2)
+
+# Plot location of each tree measured.
+points(vegStr$easting,
+       vegStr$northing, 
+       pch = 19, cex = 0.5, col = 2)
 
